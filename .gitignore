@@ -10,3 +10,4 @@ data/uploads/*
 data/.cache/
 yolo11x.pt
 *.ipynb
+docs/knowledge.md
