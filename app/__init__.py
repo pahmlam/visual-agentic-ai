@@ -1,0 +1,2 @@
+"""Local Visual Agent application."""
+

@@ -1,0 +1,12 @@
+.DS_Store
+.env
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+venv/
+frontend/node_modules/
+data/uploads/*
+!data/uploads/.gitkeep
+data/.cache/
+yolo11x.pt
+*.ipynb
