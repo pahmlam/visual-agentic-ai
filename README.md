@@ -15,16 +15,41 @@ Ollama and YOLO run locally. Research lookup calls arXiv/Wikipedia over the netw
 
 ## Requirements
 
-- Python virtual environment in `venv/`
-- Ollama running locally
-- Models:
+### 1. Local LLM/VLM with Ollama
 
-```bash
-ollama pull llama3.2:3b
-ollama pull llama3.2-vision
-```
+Ollama is used to run local models on your computer.
 
-- YOLO weights at `./yolo11x.pt`
+1. **Install Ollama**: Download and install Ollama from [ollama.com](https://ollama.com/).
+2. **Start Ollama**: Make sure the Ollama application is running in the background.
+3. **Pull Models**: Open your terminal and run the following commands to download the default models:
+   - For text tasks:
+     ```bash
+     ollama pull llama3.2:3b
+     ```
+   - For vision tasks (describing images):
+     ```bash
+     ollama pull llama3.2-vision
+     ```
+4. **Verify**: Run `ollama list` in the terminal to verify the models are installed successfully.
+
+### 2. Object Detection with YOLOv11
+
+The vision service uses YOLOv11 for object detection and counting. By default, it looks for the `yolo11x.pt` model weights file in the root directory.
+
+1. **Download Weights**:
+   - You can download the weights file `yolo11x.pt` (approx. 115MB) directly from Ultralytics releases:
+     ```bash
+     curl -L -o yolo11x.pt https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt
+     ```
+   - *Alternative (lighter model for lower RAM)*: If you want a faster, lighter model (e.g., `yolo11n.pt`), download it via:
+     ```bash
+     curl -L -o yolo11n.pt https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt
+     ```
+     Then, update the `YOLO_MODEL_PATH` variable in your `.env` file:
+     ```env
+     YOLO_MODEL_PATH="./yolo11n.pt"
+     ```
+2. **Placement**: Ensure the downloaded `.pt` file is placed directly in the root folder of this project (`visual-agent/`).
 
 ## Setup
 

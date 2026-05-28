@@ -395,4 +395,11 @@ hoặc trả JSON sai format, parser sẽ lỗi `JSONDecodeError` / `OUTPUT_PARS
 - Đã tạo tài liệu API chi tiết tại [api_document.md](file:///Users/phamtunglam/Documents/Projects/visual-agent/docs/api_document.md) liệt kê đầy đủ toàn bộ 8 API Endpoints của backend FastAPI.
 - Tài liệu mô tả rõ Method, URL, Schema Request/Response, ví dụ Payload thực tế cho các API: Health Check (`/api/health`), Settings Management (`/api/settings` GET & POST), Upload tệp tin (`/api/upload`), Chat Router (`/api/chat`) và các endpoint nghiệp vụ trực tiếp (`/api/research`, `/api/vision/describe`, `/api/vision/detect`).
 
+### Hướng dẫn tải model trong README.md
+
+- Đã cập nhật [README.md](file:///Users/phamtunglam/Documents/Projects/visual-agent/README.md) để cung cấp hướng dẫn cài đặt và thiết lập chi tiết:
+  - **Ollama**: Hướng dẫn cài đặt từ web chính thức, khởi chạy nền, tải các model qua CLI (`llama3.2:3b` và `llama3.2-vision`) và kiểm tra bằng `ollama list`.
+  - **YOLOv11**: Hướng dẫn tải trực tiếp file weights `yolo11x.pt` từ GitHub release chính thức của Ultralytics qua lệnh `curl`. Hướng dẫn thêm tuỳ chọn tải model nhẹ hơn (`yolo11n.pt`) cho máy cấu hình yếu kèm cách cấu hình lại biến `YOLO_MODEL_PATH` trong `.env`.
+
+
 
