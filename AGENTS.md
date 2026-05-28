@@ -1,32 +1,32 @@
 # AGENTS.md
 
-Hướng dẫn cho Codex hoặc agent mới khi làm việc trong repo này.
+Instructions for Codex or new agents working in this repository.
 
-## Ngôn ngữ Làm Việc
+## Working Language
 
-- Trả lời người dùng bằng tiếng Việt.
-- Ghi chú kỹ thuật, fix bug, quyết định thiết kế, hoặc kiến thức mới vào `docs/knowledge.md`.
-- Giữ câu trả lời gọn, trực tiếp, có đường dẫn file khi cần.
+- Answer the user in Vietnamese.
+- Write technical notes, bug fixes, design decisions, or new knowledge in `docs/knowledge.md`.
+- Keep answers concise, direct, and include file paths when necessary.
 
-## Tổng Quan Project
+## Project Overview
 
-`visual-agent` là web app local được tách từ `workspace.ipynb`.
+`visual-agent` is a local web application split from `workspace.ipynb`.
 
-App gồm:
+The app consists of:
 
 - Backend FastAPI: `app/main.py`
 - Services:
   - `app/services/research.py`: Wikipedia + arXiv + Ollama text synthesis.
   - `app/services/vision.py`: provider-based vision description + YOLO detection/counting.
-  - `app/services/router.py`: route thủ công giữa research/vision.
-  - `app/services/image_io.py`: xử lý path/URL/base64 image.
-  - `app/services/llm.py`: chọn provider Ollama/OpenAI/Gemini cho LLM và VLM.
+  - `app/services/router.py`: manual routing between research/vision.
+  - `app/services/image_io.py`: processes paths/URLs/base64 images.
+  - `app/services/llm.py`: selects Ollama/OpenAI/Gemini providers for LLM and VLM.
 - Frontend Vue/Vite/TypeScript: `frontend/`
 - Static build output: `app/static/`
 - Knowledge log: `docs/knowledge.md`
-- Notebook gốc/tham khảo: `workspace.ipynb`
+- Original/reference notebook: `workspace.ipynb`
 
-`workspace.ipynb` không còn là source chính của app. Khi sửa app, ưu tiên code trong `app/` và `frontend/`.
+`workspace.ipynb` is no longer the main source of the application. When modifying the application, prioritize coding in `app/` and `frontend/`.
 
 ## Tech Stack
 
@@ -36,7 +36,7 @@ Backend:
 - Pydantic v2
 - LangChain + `langchain-ollama`
 - OpenAI Python SDK
-- Gemini REST API qua `requests`
+- Gemini REST API via `requests`
 - arXiv + Wikipedia wrappers
 - Ultralytics YOLO
 
@@ -47,24 +47,24 @@ Frontend:
 - TypeScript
 - Single File Components
 - Scoped CSS
-- API client wrapper trong `frontend/src/api/client.ts`
+- API client wrapper in `frontend/src/api/client.ts`
 
-Frontend style được lấy cảm hứng từ repo:
+The frontend style is inspired by the repository:
 
 ```text
 /Users/phamtunglam/Documents/Projects/knowte
 ```
 
-Các đặc điểm UI cần giữ:
+UI characteristics to preserve:
 
 - Dark alien/space/technology theme.
 - Menlo/monospace font stack.
 - Teal accent.
-- Sharp radius khoảng 3px.
-- Dense operational UI, không làm landing page.
-- Không quay lại static HTML/CSS/JS thủ công nếu không có lý do rõ ràng.
+- Sharp radius of around 3px.
+- Dense operational UI, not a landing page.
+- Do not revert to manual static HTML/CSS/JS without a clear reason.
 
-## Lệnh Chạy
+## Run Commands
 
 Backend + built frontend:
 
@@ -84,7 +84,7 @@ Build frontend:
 ./scripts/build_frontend.sh
 ```
 
-Hoặc:
+Or:
 
 ```bash
 cd frontend
@@ -99,14 +99,14 @@ cd frontend
 npm run dev
 ```
 
-Vite proxy `/api` và `/uploads` về FastAPI.
-Vite mặc định chạy ở:
+Vite proxies `/api` and `/uploads` to FastAPI.
+Vite runs by default at:
 
 ```text
 http://127.0.0.1:5177
 ```
 
-## Kiểm Tra Nhanh
+## Quick Check
 
 Python compile:
 
@@ -127,7 +127,7 @@ cd frontend
 npm run build
 ```
 
-Smoke test FastAPI không cần network/model:
+Smoke test FastAPI without network/model:
 
 ```bash
 venv/bin/python - <<'PY'
@@ -140,14 +140,14 @@ print(client.post("/api/chat", json={"mode": "vision", "message": "describe this
 PY
 ```
 
-## Ollama Và Model Local
+## Ollama and Local Models
 
-Mặc định:
+Defaults:
 
 - Text model: `llama3.2:3b`
 - Vision model: `llama3.2-vision`
 
-Khai báo trong `.env` nếu cần:
+Declare in `.env` if needed:
 
 ```bash
 OLLAMA_TEXT_MODEL=llama3.2:3b
@@ -158,46 +158,46 @@ YOLO_MODEL_PATH=./yolo11x.pt
 UPLOAD_DIR=./data/uploads
 ```
 
-Lưu ý:
+Notes:
 
-- `llama3.2:3b` là text model, không đọc ảnh.
-- `llama3.2-vision` dùng cho mô tả ảnh.
-- Local model nhỏ có thể yếu ở tool-calling/handoff. Vì vậy backend đang dùng router thủ công trong `app/services/router.py` thay vì phụ thuộc hoàn toàn vào LangGraph supervisor.
+- `llama3.2:3b` is a text model and cannot process images.
+- `llama3.2-vision` is used for image description.
+- Small local models may be weak at tool-calling/handoff. Therefore, the backend uses manual routing in `app/services/router.py` instead of relying entirely on a LangGraph supervisor.
 
 ## Provider Settings
 
-- UI có một nút `SETTINGS` trên top bar để chọn provider cho LLM và VLM.
-- Provider hợp lệ: `ollama`, `openai`, `gemini`.
-- Nếu chọn `openai` hoặc `gemini`, frontend yêu cầu nhập key nếu `.env` chưa có key.
-- API keys được lưu vào `.env` bởi `POST /api/settings`.
-- `GET /api/settings` không trả raw key, chỉ trả `has_openai_api_key` và `has_gemini_api_key`.
-- Model/provider đang active được trả qua `GET /api/health`.
-- Khi sửa phần này, nhớ giữ nguyên nguyên tắc không log, không render, không trả API key về client.
+- The UI has a `SETTINGS` button on the top bar to select the provider for LLM and VLM.
+- Valid providers: `ollama`, `openai`, `gemini`.
+- If `openai` or `gemini` is selected, the frontend will request a key if it is not already in `.env`.
+- API keys are saved to `.env` via `POST /api/settings`.
+- `GET /api/settings` does not return the raw key, only `has_openai_api_key` and `has_gemini_api_key`.
+- The currently active model/provider is returned via `GET /api/health`.
+- When modifying this section, remember to preserve the principle of not logging, not rendering, and not returning the API key to the client.
 
-## Vision Và YOLO
+## Vision and YOLO
 
-- YOLO weights hiện nằm ở `./yolo11x.pt`.
-- Upload ảnh lưu vào `data/uploads/`.
-- File upload runtime bị ignore bởi git.
-- Annotated detection images cũng được lưu vào `data/uploads/` và serve qua `/uploads/...`.
+- YOLO weights are currently located at `./yolo11x.pt`.
+- Uploaded images are stored in `data/uploads/`.
+- Uploaded runtime files are ignored by git.
+- Annotated detection images are also saved in `data/uploads/` and served via `/uploads/...`.
 
 ## Research
 
-- Research route gọi Wikipedia và arXiv qua network.
-- arXiv có thể rate-limit HTTP 429.
-- `RateLimitFriendlyArxivAPIWrapper` trong `app/services/research.py` dùng `arxiv.Client(page_size=top_k_results, delay_seconds=5.0, num_retries=5)` để giảm request quá lớn.
-- Nếu source ngoài lỗi, endpoint vẫn nên trả lỗi mềm thay vì crash UI.
+- The research route calls Wikipedia and arXiv over the network.
+- arXiv may return HTTP 429 rate limit.
+- `RateLimitFriendlyArxivAPIWrapper` in `app/services/research.py` uses `arxiv.Client(page_size=top_k_results, delay_seconds=5.0, num_retries=5)` to reduce oversized requests.
+- If external sources fail, the endpoint should return a soft error instead of crashing the UI.
 
-## Quy Ước Code
+## Coding Conventions
 
-- Không commit secrets hoặc API keys. Notebook cũ có thể chứa key demo; không copy sang source mới.
-- Không sửa repo `knowte` khi user yêu cầu “theo stack knowte”; chỉ đọc để tham khảo.
-- Khi sửa frontend:
-  - Sửa source trong `frontend/src/`.
-  - Chạy `npm run build`.
-  - Build output sẽ ghi vào `app/static/`.
-- Khi sửa backend:
-  - Giữ response schema trong `app/models.py`.
-  - Bắt lỗi service và trả thông báo có ích cho UI.
-  - Không để endpoint crash vì Ollama/arXiv/Wikipedia tạm lỗi.
-- Sau thay đổi đáng kể, cập nhật `docs/knowledge.md`.
+- Do not commit secrets or API keys. Old notebooks may contain demo keys; do not copy them to the new source code.
+- Do not modify the `knowte` repository when the user requests "following the knowte stack"; only read it for reference.
+- When modifying the frontend:
+  - Edit the source code in `frontend/src/`.
+  - Run `npm run build`.
+  - The build output will be written to `app/static/`.
+- When modifying the backend:
+  - Maintain the response schema in `app/models.py`.
+  - Catch service errors and return helpful messages to the UI.
+  - Do not let endpoints crash due to temporary Ollama/arXiv/Wikipedia errors.
+- After significant changes, update `docs/knowledge.md`.
