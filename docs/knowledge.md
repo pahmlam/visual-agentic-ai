@@ -383,3 +383,16 @@ hoặc trả JSON sai format, parser sẽ lỗi `JSONDecodeError` / `OUTPUT_PARS
   - `App.vue` đổi layout thành 2 cột: supervisor input + workflow ở trái, answer/artifacts ở phải.
 - Người dùng chỉ tương tác với supervisor; frontend luôn gửi `mode="auto"` để backend tự route.
 - Build frontend đã cập nhật vào `app/static`.
+
+### Tài liệu kỹ thuật chi tiết (Technical Document)
+
+- Đã tạo tài liệu kỹ thuật tại [technical_document.md](file:///Users/phamtunglam/Documents/Projects/visual-agent/docs/technical_document.md) để mô tả toàn bộ cấu trúc thư mục, kiến trúc Client-Server, luồng dữ liệu của các Services (Research, Vision, LLM, Image I/O) và cơ chế định tuyến thủ công (manual routing flow).
+- Tài liệu sử dụng sơ đồ Mermaid giúp mô tả sinh động cách thức điều phối của hệ thống từ lúc nhận request đến khi điều hướng thành công.
+- Ghi nhận chi tiết cách khắc phục lỗi rate-limit của arXiv qua custom `arxiv.Client` và cơ chế gom cụm (combine) kết quả Vision + Research trong chế độ `auto`.
+
+### Tài liệu API (API Document)
+
+- Đã tạo tài liệu API chi tiết tại [api_document.md](file:///Users/phamtunglam/Documents/Projects/visual-agent/docs/api_document.md) liệt kê đầy đủ toàn bộ 8 API Endpoints của backend FastAPI.
+- Tài liệu mô tả rõ Method, URL, Schema Request/Response, ví dụ Payload thực tế cho các API: Health Check (`/api/health`), Settings Management (`/api/settings` GET & POST), Upload tệp tin (`/api/upload`), Chat Router (`/api/chat`) và các endpoint nghiệp vụ trực tiếp (`/api/research`, `/api/vision/describe`, `/api/vision/detect`).
+
+
