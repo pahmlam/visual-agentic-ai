@@ -52,6 +52,8 @@ export interface ChatResponse {
     counts?: Record<string, number>
     detections?: DetectionItem[]
     annotated_url?: string | null
+    memory_used?: MemoryEntry[]
+    memory_error?: string
     [key: string]: unknown
   }
 }
@@ -60,4 +62,22 @@ export interface DetectionItem {
   label: string
   confidence: number
   bbox: [number, number, number, number]
+}
+
+export interface MemoryEntry {
+  id: string
+  created_at: string
+  user_message: string
+  route: string
+  answer: string
+  sources: Record<string, string>
+  artifacts_summary: Record<string, unknown>
+}
+
+export interface MemoryListResponse {
+  items: MemoryEntry[]
+}
+
+export interface MemoryClearResponse {
+  deleted: number
 }

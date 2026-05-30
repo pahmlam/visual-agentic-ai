@@ -11,6 +11,7 @@ services:
       OLLAMA_BASE_URL: http://host.docker.internal:11434
       YOLO_MODEL_PATH: /app/models/yolo11x.pt
       UPLOAD_DIR: /app/data/uploads
+      MEMORY_DB_PATH: /app/data/memory/memory.sqlite
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -18,4 +19,5 @@ services:
       - ./models:/app/models:ro
       - ./data/uploads:/app/data/uploads
       - ./data/.cache:/app/data/.cache
+      - ./data/memory:/app/data/memory
     restart: unless-stopped

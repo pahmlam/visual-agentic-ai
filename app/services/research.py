@@ -150,7 +150,7 @@ def _search_arxiv(query: str, latest: bool) -> str:
     return _format_arxiv_results(list(client.results(search)))[:3500]
 
 
-def search_research(query: str) -> ChatResponse:
+def search_research(query: str, memory_context: str | None = None) -> ChatResponse:
     sources: dict[str, str] = {}
     latest = bool(RECENT_HINT_RE.search(query))
     wikipedia_query = _build_wikipedia_query(query)
@@ -166,13 +166,18 @@ def search_research(query: str) -> ChatResponse:
     except Exception as exc:
         sources["arxiv"] = f"arXiv failed: {exc}"
 
+    previous_context = (
+        f"Previous context:\n{memory_context}\n\n" if memory_context else ""
+    )
     prompt = (
         "You are a concise research assistant. Answer in English.\n"
         "Synthesize the sources below. Separate background context from research papers.\n"
         "If a source failed or is irrelevant, say that briefly.\n\n"
         "Ignore source items that are clearly unrelated to the user question.\n"
+        "Use relevant previous interactions only as lightweight context; do not treat them as external sources.\n"
         "Return the final answer only. Do not say that you will summarize.\n\n"
         f"Question:\n{query}\n\n"
+        f"{previous_context}"
         f"Wikipedia search query:\n{wikipedia_query}\n\n"
         f"arXiv search query:\n{arxiv_query}\n\n"
         f"Wikipedia:\n{sources['wikipedia']}\n\n"

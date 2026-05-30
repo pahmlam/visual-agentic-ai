@@ -33,9 +33,24 @@ def _target_from_prompt(prompt: str, labels: list[str]) -> str | None:
     return None
 
 
-def describe_image(image_path_or_url: str, prompt: str = "Describe this image.") -> ChatResponse:
+def _with_memory_context(prompt: str, memory_context: str | None) -> str:
+    if not memory_context:
+        return prompt
+    return (
+        "Use the previous interactions below only as lightweight context if relevant. "
+        "Describe the current image based on visible content.\n\n"
+        f"{memory_context}\n\n"
+        f"Current request:\n{prompt}"
+    )
+
+
+def describe_image(
+    image_path_or_url: str,
+    prompt: str = "Describe this image.",
+    memory_context: str | None = None,
+) -> ChatResponse:
     data_url = encode_image_data_url(image_path_or_url)
-    answer = invoke_vision(prompt, data_url)
+    answer = invoke_vision(_with_memory_context(prompt, memory_context), data_url)
     return ChatResponse(
         route="vision.describe",
         answer=answer,
@@ -92,7 +107,11 @@ def detect_and_count(image_path_or_url: str, prompt: str = "Detect and count obj
     )
 
 
-def answer_vision(message: str, image_path_or_url: str | None = None) -> ChatResponse:
+def answer_vision(
+    message: str,
+    image_path_or_url: str | None = None,
+    memory_context: str | None = None,
+) -> ChatResponse:
     image_ref = image_path_or_url or extract_image_reference(message)
     if not image_ref:
         return ChatResponse(
@@ -103,4 +122,4 @@ def answer_vision(message: str, image_path_or_url: str | None = None) -> ChatRes
     lowered = message.lower()
     if any(word in lowered for word in COUNT_WORDS):
         return detect_and_count(image_ref, prompt=message)
-    return describe_image(image_ref, prompt=message)
+    return describe_image(image_ref, prompt=message, memory_context=memory_context)

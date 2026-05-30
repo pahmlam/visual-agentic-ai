@@ -105,6 +105,7 @@ docker compose down
 - Inside Docker, `OLLAMA_BASE_URL` is set to `http://host.docker.internal:11434`.
 - `.env` is mounted into the container, so Settings changes persist on the host.
 - Runtime uploads are stored in `data/uploads/`.
+- Persistent conversation memory is stored in `data/memory/memory.sqlite`.
 - YOLO weights are mounted from `models/` and are not copied into the Docker image.
 
 ## Local Development Setup
@@ -168,9 +169,30 @@ Use the `SETTINGS` button in the top bar to choose:
 
 The backend saves these values into `.env`. API keys are never returned to the frontend; the UI only receives `has_openai_api_key` and `has_gemini_api_key`.
 
+## Memory Agent
+
+The app includes a local Memory Agent for `/api/chat` requests.
+
+- It stores completed user requests and assistant responses in SQLite.
+- Default database path: `data/memory/memory.sqlite`.
+- It automatically retrieves up to `MEMORY_MAX_RESULTS` relevant previous interactions and injects them as lightweight context for the current answer.
+- It does not affect direct stateless endpoints such as `/api/research`, `/api/vision/describe`, or `/api/vision/detect`.
+- The UI shows a compact `memory used` panel when previous interactions are used.
+- Use `Clear memory` in the answer panel to delete all saved memory.
+
+Config:
+
+```env
+MEMORY_ENABLED=true
+MEMORY_DB_PATH=./data/memory/memory.sqlite
+MEMORY_MAX_RESULTS=5
+```
+
 ## API
 
 - `GET /api/health`
+- `GET /api/memory`
+- `DELETE /api/memory`
 - `POST /api/upload`
 - `POST /api/chat`
 - `POST /api/research`

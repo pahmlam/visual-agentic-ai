@@ -27,7 +27,7 @@ if [ ! -f ".env" ]; then
   echo "Created .env from .env.example"
 fi
 
-mkdir -p "models" "data/uploads" "data/.cache"
+mkdir -p "models" "data/uploads" "data/.cache" "data/memory"
 
 echo "Pulling Ollama text model..."
 ollama pull llama3.2:3b

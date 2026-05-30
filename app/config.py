@@ -10,11 +10,13 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 APP_DIR = BASE_DIR / "app"
 STATIC_DIR = APP_DIR / "static"
 CACHE_DIR = BASE_DIR / "data" / ".cache"
+MEMORY_DIR = BASE_DIR / "data" / "memory"
 ENV_PATH = BASE_DIR / ".env"
 
 load_dotenv(ENV_PATH, override=False)
 
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(CACHE_DIR / "matplotlib"))
 os.environ.setdefault("YOLO_CONFIG_DIR", str(CACHE_DIR / "ultralytics"))
 os.environ.setdefault("XDG_CACHE_HOME", str(CACHE_DIR / "xdg"))
@@ -46,6 +48,11 @@ class Settings:
         self.max_upload_bytes = int(
             os.getenv("MAX_UPLOAD_BYTES", str(20 * 1024 * 1024))
         )
+        self.memory_enabled = self._bool(os.getenv("MEMORY_ENABLED", "true"))
+        self.memory_db_path = Path(
+            os.getenv("MEMORY_DB_PATH", str(MEMORY_DIR / "memory.sqlite"))
+        )
+        self.memory_max_results = int(os.getenv("MEMORY_MAX_RESULTS", "5"))
 
     @staticmethod
     def _provider(value: str) -> str:
@@ -54,15 +61,21 @@ class Settings:
             return normalized
         return "ollama"
 
+    @staticmethod
+    def _bool(value: str) -> bool:
+        return value.lower().strip() in {"1", "true", "yes", "on"}
+
 
 settings = Settings()
 settings.upload_dir.mkdir(parents=True, exist_ok=True)
+settings.memory_db_path.parent.mkdir(parents=True, exist_ok=True)
 
 
 def reload_settings() -> Settings:
     next_settings = Settings()
     settings.__dict__.update(next_settings.__dict__)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
+    settings.memory_db_path.parent.mkdir(parents=True, exist_ok=True)
     return settings
 
 

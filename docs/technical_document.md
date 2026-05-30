@@ -31,7 +31,8 @@ visual-agent/
 │   └── static/                 # Frontend static assets (sau khi npm run build)
 ├── data/                       # Dữ liệu runtime
 │   ├── .cache/                 # Cache cho YOLO, matplotlib, xdg
-│   └── uploads/                # Ảnh upload của user và ảnh YOLO annotated
+│   ├── uploads/                # Ảnh upload của user và ảnh YOLO annotated
+│   └── memory/                 # SQLite persistent memory cho Memory Agent
 ├── docs/                       # Tài liệu dự án
 │   ├── knowledge.md            # Nhật ký kiến thức & Debugging log
 │   └── technical_document.md   # Tài liệu kỹ thuật chi tiết (file này)
@@ -75,6 +76,7 @@ graph TD
         
         Router --> Research[app/services/research.py]
         Router --> Vision[app/services/vision.py]
+        Main <--> Memory[app/services/memory.py]
         
         Research --> Wikipedia[Wikipedia API Wrapper]
         Research --> arXiv[arXiv API Client]
@@ -89,6 +91,30 @@ graph TD
         LLM_Svc <--> OpenAI[OpenAI API]
         LLM_Svc <--> Gemini[Gemini REST API]
     end
+```
+
+### Memory Agent
+
+Memory Agent là lớp lưu nhớ cục bộ cho endpoint `/api/chat`:
+
+- Lưu mỗi lượt hỏi/đáp đã hoàn tất vào SQLite tại `data/memory/memory.sqlite`.
+- Trước khi xử lý request mới, truy xuất tối đa `MEMORY_MAX_RESULTS` lượt hội thoại cũ có liên quan.
+- Memory context chỉ được đưa vào prompt tổng hợp của LLM/VLM, không làm thay đổi query search Wikipedia/arXiv và không ảnh hưởng YOLO detection.
+- Nếu SQLite hỗ trợ FTS5, service dùng full-text search; nếu không, fallback sang token-overlap scoring bằng Python.
+- API key và secret pattern phổ biến được redact trước khi lưu.
+- Docker Compose mount `data/memory` vào container để memory persist qua restart.
+
+Luồng `/api/chat` sau khi có Memory Agent:
+
+```mermaid
+flowchart TD
+    Start([POST /api/chat]) --> Retrieve[Memory Agent retrieve relevant entries]
+    Retrieve --> Context[Format memory context]
+    Context --> Route[Manual router decides research/vision/combined]
+    Route --> Synthesis[LLM/VLM synthesis with memory context if relevant]
+    Synthesis --> Attach[Attach artifacts.memory_used]
+    Attach --> Store[Store new interaction in SQLite]
+    Store --> End([Return ChatResponse])
 ```
 
 ### Chế độ triển khai khuyến nghị

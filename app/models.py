@@ -48,6 +48,24 @@ class ChatResponse(BaseModel):
     artifacts: dict[str, Any] = Field(default_factory=dict)
 
 
+class MemoryEntry(BaseModel):
+    id: str
+    created_at: str
+    user_message: str
+    route: str
+    answer: str
+    sources: dict[str, str] = Field(default_factory=dict)
+    artifacts_summary: dict[str, Any] = Field(default_factory=dict)
+
+
+class MemoryListResponse(BaseModel):
+    items: list[MemoryEntry]
+
+
+class MemoryClearResponse(BaseModel):
+    deleted: int
+
+
 class HealthResponse(BaseModel):
     status: str
     llm_provider: Provider

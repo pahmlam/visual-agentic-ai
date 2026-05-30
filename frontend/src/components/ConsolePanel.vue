@@ -7,6 +7,10 @@ defineProps<{
   busy: boolean
 }>()
 
+defineEmits<{
+  'clear-memory': []
+}>()
+
 function formatJson(value: unknown): string {
   return JSON.stringify(value, null, 2)
 }
@@ -19,6 +23,9 @@ function formatJson(value: unknown): string {
         <div class="kicker">answer</div>
         <h2>{{ response?.route || (busy ? 'running' : 'ready') }}</h2>
       </div>
+      <button class="clear-memory" type="button" @click="$emit('clear-memory')">
+        clear memory
+      </button>
     </div>
 
     <section class="answer" :class="{ error }">
@@ -57,6 +64,26 @@ function formatJson(value: unknown): string {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div v-if="response?.artifacts?.memory_used?.length" class="artifact wide memory">
+        <div class="artifact-head">memory used</div>
+        <div class="memory-list">
+          <article
+            v-for="item in response.artifacts.memory_used.slice(0, 5)"
+            :key="item.id"
+            class="memory-item"
+          >
+            <div class="memory-meta">{{ item.created_at.slice(0, 10) }} · {{ item.route }}</div>
+            <strong>{{ item.user_message }}</strong>
+            <p>{{ item.answer }}</p>
+          </article>
+        </div>
+      </div>
+
+      <div v-if="response?.artifacts?.memory_error" class="artifact wide memory-error">
+        <div class="artifact-head">memory warning</div>
+        <pre>{{ response.artifacts.memory_error }}</pre>
       </div>
 
       <div v-for="(value, key) in response?.sources || {}" :key="key" class="artifact source">
@@ -178,6 +205,72 @@ pre {
   max-height: 480px;
   object-fit: contain;
   background: rgba(0, 0, 0, 0.32);
+}
+
+.clear-memory {
+  height: 28px;
+  border: 1px solid var(--color-glass-hover);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--color-text-secondary);
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.clear-memory:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.memory-list {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.memory-item {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 9px;
+}
+
+.memory-meta {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.memory-item strong,
+.memory-item p {
+  display: block;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.memory-item strong {
+  color: var(--color-accent);
+  font-size: 12px;
+  -webkit-line-clamp: 2;
+}
+
+.memory-item p {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 5px;
+  -webkit-line-clamp: 3;
+}
+
+.memory-error {
+  border-color: rgba(240, 192, 64, 0.42);
 }
 
 table {

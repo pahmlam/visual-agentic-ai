@@ -1,6 +1,8 @@
 import type {
   ChatResponse,
   HealthResponse,
+  MemoryClearResponse,
+  MemoryListResponse,
   Mode,
   ProviderSettings,
   ProviderSettingsPayload,
@@ -66,4 +68,16 @@ export async function saveProviderSettings(payload: ProviderSettingsPayload): Pr
     body: JSON.stringify(payload),
   })
   return parseResponse<ProviderSettings>(response)
+}
+
+export async function getMemory(limit = 50): Promise<MemoryListResponse> {
+  const response = await fetch(`/api/memory?limit=${encodeURIComponent(limit)}`)
+  return parseResponse<MemoryListResponse>(response)
+}
+
+export async function clearMemory(): Promise<MemoryClearResponse> {
+  const response = await fetch('/api/memory', {
+    method: 'DELETE',
+  })
+  return parseResponse<MemoryClearResponse>(response)
 }

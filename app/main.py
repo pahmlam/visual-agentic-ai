@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -13,11 +13,20 @@ from app.models import (
     ChatResponse,
     DetectionRequest,
     HealthResponse,
+    MemoryClearResponse,
+    MemoryListResponse,
     ProviderSettingsRequest,
     ProviderSettingsResponse,
     ResearchRequest,
     UploadResponse,
     VisionRequest,
+)
+from app.services.memory import (
+    clear_memory,
+    format_memory_context,
+    list_recent,
+    retrieve_relevant,
+    store_interaction,
 )
 from app.services.research import search_research
 from app.services.router import route_chat
@@ -148,7 +157,38 @@ async def upload(file: UploadFile = File(...)) -> UploadResponse:
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
-    return route_chat(request)
+    memory_error: str | None = None
+    try:
+        memory_entries = retrieve_relevant(request.message)
+    except Exception as exc:
+        memory_entries = []
+        memory_error = f"Memory retrieve failed: {exc}"
+    memory_context = format_memory_context(memory_entries)
+    response = route_chat(request, memory_context=memory_context)
+
+    if memory_entries:
+        response.artifacts["memory_used"] = [
+            entry.model_dump() for entry in memory_entries
+        ]
+    if memory_error:
+        response.artifacts["memory_error"] = memory_error
+
+    try:
+        store_interaction(request.message, response)
+    except Exception as exc:
+        response.artifacts["memory_error"] = f"Memory store failed: {exc}"
+
+    return response
+
+
+@app.get("/api/memory", response_model=MemoryListResponse)
+def get_memory(limit: int = Query(default=50, ge=1, le=200)) -> MemoryListResponse:
+    return MemoryListResponse(items=list_recent(limit=limit))
+
+
+@app.delete("/api/memory", response_model=MemoryClearResponse)
+def delete_memory() -> MemoryClearResponse:
+    return MemoryClearResponse(deleted=clear_memory())
 
 
 @app.post("/api/research", response_model=ChatResponse)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getHealth, getProviderSettings, runChat, saveProviderSettings, uploadImage } from './api/client'
+import { clearMemory, getHealth, getProviderSettings, runChat, saveProviderSettings, uploadImage } from './api/client'
 import ConsolePanel from './components/ConsolePanel.vue'
 import MissionPanel from './components/MissionPanel.vue'
 import SettingsModal from './components/SettingsModal.vue'
@@ -92,6 +92,19 @@ async function handleSaveSettings(payload: ProviderSettingsPayload) {
     settingsSaving.value = false
   }
 }
+
+async function handleClearMemory() {
+  if (!window.confirm('Clear all saved conversation memory?')) return
+  error.value = null
+  try {
+    await clearMemory()
+    if (response.value?.artifacts) {
+      response.value.artifacts.memory_used = []
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : String(err)
+  }
+}
 </script>
 
 <template>
@@ -115,7 +128,12 @@ async function handleSaveSettings(payload: ProviderSettingsPayload) {
           :uploaded-name="uploadedName"
         />
       </section>
-      <ConsolePanel :response="response" :error="error" :busy="busy" />
+      <ConsolePanel
+        :response="response"
+        :error="error"
+        :busy="busy"
+        @clear-memory="handleClearMemory"
+      />
     </div>
     <SettingsModal
       :visible="settingsOpen"

@@ -24,6 +24,7 @@ The app consists of:
 - Frontend Vue/Vite/TypeScript: `frontend/`
 - Static build output: `app/static/`
 - Docker deployment: `Dockerfile` + `docker-compose.yml`
+- Persistent memory: `app/services/memory.py` + `data/memory/memory.sqlite`
 - Knowledge log: `docs/knowledge.md`
 - Original/reference notebook: `workspace.ipynb`
 
@@ -186,6 +187,15 @@ Notes:
 - `GET /api/settings` does not return the raw key, only `has_openai_api_key` and `has_gemini_api_key`.
 - The currently active model/provider is returned via `GET /api/health`.
 - When modifying this section, remember to preserve the principle of not logging, not rendering, and not returning the API key to the client.
+
+## Memory Agent
+
+- Memory is global for the local app, not per user/session.
+- Memory only applies to `POST /api/chat`; direct research/vision endpoints remain stateless.
+- SQLite DB path defaults to `data/memory/memory.sqlite`.
+- Docker Compose mounts `data/memory` so memory survives container restarts.
+- `ChatResponse.artifacts.memory_used` contains compact memory entries used for the current answer.
+- Do not store raw API keys or `.env` content in memory; `app/services/memory.py` redacts common key patterns before persisting.
 
 ## Vision and YOLO
 
