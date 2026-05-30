@@ -23,6 +23,7 @@ The app consists of:
   - `app/services/llm.py`: selects Ollama/OpenAI/Gemini providers for LLM and VLM.
 - Frontend Vue/Vite/TypeScript: `frontend/`
 - Static build output: `app/static/`
+- Docker deployment: `Dockerfile` + `docker-compose.yml`
 - Knowledge log: `docs/knowledge.md`
 - Original/reference notebook: `workspace.ipynb`
 
@@ -65,6 +66,15 @@ UI characteristics to preserve:
 - Do not revert to manual static HTML/CSS/JS without a clear reason.
 
 ## Run Commands
+
+Recommended Docker app + native Ollama mode:
+
+```bash
+./scripts/setup_native_ollama.sh
+docker compose up --build
+```
+
+In this mode, Docker runs only the app. Ollama runs natively on the host and the container calls it through `http://host.docker.internal:11434`.
 
 Backend + built frontend:
 
@@ -152,6 +162,7 @@ Declare in `.env` if needed:
 ```bash
 OLLAMA_TEXT_MODEL=llama3.2:3b
 OLLAMA_VISION_MODEL=llama3.2-vision
+OLLAMA_BASE_URL=http://127.0.0.1:11434
 LLM_PROVIDER=ollama
 VLM_PROVIDER=ollama
 YOLO_MODEL_PATH=./yolo11x.pt
@@ -162,6 +173,8 @@ Notes:
 
 - `llama3.2:3b` is a text model and cannot process images.
 - `llama3.2-vision` is used for image description.
+- Docker Compose overrides `OLLAMA_BASE_URL` to `http://host.docker.internal:11434` so the app container can reach native Ollama on the host.
+- Docker Compose mounts `models/` to `/app/models`; default Docker YOLO path is `/app/models/yolo11x.pt`.
 - Small local models may be weak at tool-calling/handoff. Therefore, the backend uses manual routing in `app/services/router.py` instead of relying entirely on a LangGraph supervisor.
 
 ## Provider Settings

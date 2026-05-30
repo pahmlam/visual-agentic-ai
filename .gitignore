@@ -8,6 +8,8 @@ frontend/node_modules/
 data/uploads/*
 !data/uploads/.gitkeep
 data/.cache/
+models/*
+!models/.gitkeep
 yolo11x.pt
 *.ipynb
 docs/knowledge.md

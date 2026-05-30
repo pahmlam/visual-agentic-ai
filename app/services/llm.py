@@ -19,13 +19,13 @@ VISION_SYSTEM_PROMPT = (
 
 
 @lru_cache(maxsize=8)
-def get_ollama_text_llm(model: str) -> ChatOllama:
-    return ChatOllama(model=model, temperature=0)
+def get_ollama_text_llm(model: str, base_url: str) -> ChatOllama:
+    return ChatOllama(model=model, base_url=base_url, temperature=0)
 
 
 @lru_cache(maxsize=8)
-def get_ollama_vision_llm(model: str) -> ChatOllama:
-    return ChatOllama(model=model, temperature=0)
+def get_ollama_vision_llm(model: str, base_url: str) -> ChatOllama:
+    return ChatOllama(model=model, base_url=base_url, temperature=0)
 
 
 def clear_llm_cache() -> None:
@@ -142,7 +142,9 @@ def invoke_text(prompt: str) -> str:
         return _invoke_openai_text(prompt)
     if settings.llm_provider == "gemini":
         return _invoke_gemini_text(prompt)
-    response = get_ollama_text_llm(settings.text_model).invoke(prompt)
+    response = get_ollama_text_llm(
+        settings.text_model, settings.ollama_base_url
+    ).invoke(prompt)
     return getattr(response, "content", str(response))
 
 
@@ -161,5 +163,7 @@ def invoke_vision(prompt: str, data_url: str) -> str:
             ]
         ),
     ]
-    response = get_ollama_vision_llm(settings.vision_model).invoke(messages)
+    response = get_ollama_vision_llm(
+        settings.vision_model, settings.ollama_base_url
+    ).invoke(messages)
     return getattr(response, "content", str(response))

@@ -11,11 +11,21 @@ Local web app for a visual/research agent pipeline.
 - YOLO model for object detection and counting
 - arXiv and Wikipedia tools for research lookup
 
-Ollama and YOLO run locally. Research lookup calls arXiv/Wikipedia over the network. GPT/OpenAI and Gemini modes call their provider APIs.
+Recommended deployment mode:
+
+- Ollama runs natively on the host machine for best local performance.
+- The web app runs in Docker.
+- The Docker app calls native Ollama through `http://host.docker.internal:11434`.
+
+Research lookup calls arXiv/Wikipedia over the network. GPT/OpenAI and Gemini modes call their provider APIs.
 
 ## Requirements
 
-### 1. Local LLM/VLM with Ollama
+### 1. Docker
+
+Install Docker Desktop or Docker Engine.
+
+### 2. Native LLM/VLM with Ollama
 
 Ollama is used to run local models on your computer.
 
@@ -32,26 +42,72 @@ Ollama is used to run local models on your computer.
      ```
 4. **Verify**: Run `ollama list` in the terminal to verify the models are installed successfully.
 
-### 2. Object Detection with YOLOv11
+### 3. Object Detection with YOLOv11
 
-The vision service uses YOLOv11 for object detection and counting. By default, it looks for the `yolo11x.pt` model weights file in the root directory.
+The vision service uses YOLOv11 for object detection and counting. In Docker mode, the app expects the weights at `models/yolo11x.pt` on the host, mounted into the container as `/app/models/yolo11x.pt`.
 
 1. **Download Weights**:
    - You can download the weights file `yolo11x.pt` (approx. 115MB) directly from Ultralytics releases:
      ```bash
-     curl -L -o yolo11x.pt https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt
+     mkdir -p models
+     curl -L -o models/yolo11x.pt https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11x.pt
      ```
    - *Alternative (lighter model for lower RAM)*: If you want a faster, lighter model (e.g., `yolo11n.pt`), download it via:
      ```bash
-     curl -L -o yolo11n.pt https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt
+     mkdir -p models
+     curl -L -o models/yolo11n.pt https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt
      ```
      Then, update the `YOLO_MODEL_PATH` variable in your `.env` file:
      ```env
-     YOLO_MODEL_PATH="./yolo11n.pt"
+     YOLO_MODEL_PATH="/app/models/yolo11n.pt"
      ```
-2. **Placement**: Ensure the downloaded `.pt` file is placed directly in the root folder of this project (`visual-agent/`).
+2. **Placement**: Ensure the downloaded `.pt` file is placed under `models/`.
 
-## Setup
+## Recommended Run: Docker App + Native Ollama
+
+This is the recommended high-performance mode. Docker runs only the app. Ollama stays native on your machine.
+
+Bootstrap local models and runtime folders:
+
+```bash
+./scripts/setup_native_ollama.sh
+```
+
+The script:
+
+- creates `.env` from `.env.example` if missing
+- pulls `llama3.2:3b`
+- pulls `llama3.2-vision`
+- downloads `models/yolo11x.pt` if missing
+
+Start the app container:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+```text
+http://127.0.0.1:8300
+```
+
+Stop:
+
+```bash
+docker compose down
+```
+
+### Docker Notes
+
+- `docker-compose.yml` does not start an Ollama container.
+- Ollama must be running natively before the app calls local LLM/VLM models.
+- Inside Docker, `OLLAMA_BASE_URL` is set to `http://host.docker.internal:11434`.
+- `.env` is mounted into the container, so Settings changes persist on the host.
+- Runtime uploads are stored in `data/uploads/`.
+- YOLO weights are mounted from `models/` and are not copied into the Docker image.
+
+## Local Development Setup
 
 ```bash
 source venv/bin/activate
@@ -76,7 +132,7 @@ cp .env.example .env
 The Settings button in the UI can update provider/model values and store API keys in `.env`.
 If you select GPT/OpenAI or Gemini, enter the key in Settings once; the app stores it as `OPENAI_API_KEY` or `GEMINI_API_KEY`.
 
-## Run
+## Local Development Run
 
 ```bash
 ./scripts/run_local.sh

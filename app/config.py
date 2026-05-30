@@ -30,6 +30,7 @@ class Settings:
         self.vlm_provider = self._provider(os.getenv("VLM_PROVIDER", "ollama"))
         self.text_model = os.getenv("OLLAMA_TEXT_MODEL", "llama3.2:3b")
         self.vision_model = os.getenv("OLLAMA_VISION_MODEL", "llama3.2-vision")
+        self.ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
         self.openai_text_model = os.getenv("OPENAI_TEXT_MODEL", "gpt-4.1-nano")
         self.openai_vision_model = os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini")
         self.gemini_text_model = os.getenv("GEMINI_TEXT_MODEL", "gemini-2.5-flash")

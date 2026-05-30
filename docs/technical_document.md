@@ -46,10 +46,14 @@ visual-agent/
 │   └── package.json
 ├── scripts/                    # Shell scripts để chạy local và build
 │   ├── build_frontend.sh       # Script build tự động frontend sang app/static/
-│   └── run_local.sh            # Script khởi chạy FastAPI local server
+│   ├── run_local.sh            # Script khởi chạy FastAPI local server
+│   └── setup_native_ollama.sh  # Bootstrap Ollama native + YOLO weights cho Docker mode
+├── models/                     # Weights runtime được mount vào Docker container
+├── Dockerfile                  # Multi-stage build: Vue frontend + FastAPI runtime
+├── docker-compose.yml          # Chạy app Docker, kết nối Ollama native trên host
 ├── AGENTS.md                   # Hướng dẫn dành cho AI Agents / Codex
 ├── requirements.txt            # Dependencies Python
-└── yolo11x.pt                  # Weights model YOLOv11
+└── yolo11x.pt                  # Weights YOLOv11 cho local dev cũ nếu còn dùng
 ```
 
 ---
@@ -81,11 +85,22 @@ graph TD
     end
 
     subgraph AI/API Providers
-        LLM_Svc <--> Ollama[Ollama Local Server]
+        LLM_Svc <--> Ollama[Ollama Native Host Server]
         LLM_Svc <--> OpenAI[OpenAI API]
         LLM_Svc <--> Gemini[Gemini REST API]
     end
 ```
+
+### Chế độ triển khai khuyến nghị
+
+Chế độ hiệu năng tốt của repo là **Docker app + Ollama native**:
+
+- FastAPI, frontend static assets, Python dependencies và YOLO runtime chạy trong Docker container `app`.
+- Ollama chạy native trên máy host để tận dụng tài nguyên local tốt hơn, đặc biệt trên macOS Apple Silicon.
+- Container gọi Ollama host qua `OLLAMA_BASE_URL=http://host.docker.internal:11434`.
+- `docker-compose.yml` có `extra_hosts: ["host.docker.internal:host-gateway"]` để hỗ trợ Linux.
+- `.env` được bind mount vào `/app/.env`, vì vậy khi user đổi provider/API key trong Settings thì thay đổi vẫn lưu lại trên host.
+- YOLO weights không nằm trong image Docker; file `models/yolo11x.pt` được mount read-only vào `/app/models/yolo11x.pt`.
 
 ---
 
